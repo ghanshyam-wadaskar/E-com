@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Order History - Techmspire</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #fce4ec);
+      padding: 40px;
+      color: #333;
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      font-size: 32px;
+      color: #4A148C;
+      margin-bottom: 40px;
+      background: linear-gradient(to right, #7b1fa2, #e91e63);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .order-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 20px 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    .order-card:hover {
+      transform: scale(1.02);
+    }
+    .details {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    .label {
+      font-weight: 600;
+      color: #6a1b9a;
+    }
+    .item-list {
+      margin-top: 15px;
+      padding-left: 20px;
+    }
+    .item {
+      margin-bottom: 8px;
+      color: #444;
+    }
+    .item::before {
+      content: "🛍️ ";
+    }
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      font-size: 14px;
+      color: #777;
+    }
+    @media (max-width: 600px) {
+      body { padding: 20px; }
+      .order-card { padding: 15px 20px; }
+      h2 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🧾 Your Order History</h2>
+    <div id="orders-list">Loading...</div>
+    <footer>&copy; 2025 Techmspire Pvt. Ltd.</footer>
+  </div>
+
+  <script>
+    async function fetchOrderHistory() {
+      try {
+        const res = await fetch('/api/order-history');
+        const orders = await res.json();
+        const container = document.getElementById('orders-list');
+        container.innerHTML = '';
+
+        if (orders.length === 0) {
+          container.innerHTML = '<p>No orders found.</p>';
+          return;
+        }
+
+        orders.forEach(order => {
+          const formattedDate = new Date(order.timestamp).toLocaleDateString("en-IN", {
+            day: 'numeric', month: 'long', year: 'numeric'
+          });
+
+          const block = document.createElement('div');
+          block.className = 'order-card';
+          block.innerHTML = `
+            <div class="details"><span class="label">👤 Name:</span> ${order.name}</div>
+            <div class="details"><span class="label">📍 Address:</span> ${order.address}</div>
+            <div class="details"><span class="label">💳 Payment:</span> ${order.payment_mode}</div>
+            <div class="details"><span class="label">📅 Placed On:</span> ${formattedDate}</div>
+            <div class="details"><span class="label">🧾 Items:</span></div>
+            <div class="item-list">
+              ${order.items.map(item => `
+                <div class="item">${item.product_name} × ${item.quantity} — ₹${item.price}</div>
+              `).join('')}
+            </div>
+          `;
+          container.appendChild(block);
+        });
+      } catch (err) {
+        document.getElementById('orders-list').innerHTML = '<p>Unable to fetch order history.</p>';
+        console.error(err);
+      }
+    }
+
+    fetchOrderHistory();
+  </script>
+</body>
+</html>
